@@ -5,6 +5,12 @@ const {EXIT_CODE} = require(`./../../constants`);
 const {getRandomInt, shuffle} = require(`./../utils/utils`);
 
 const FILENAME = `./../../mock.json`;
+const DEFAULT_MOCK_COUNT = 1;
+const MAX_MOCK_COUNT = 1000;
+
+const NOT_WORKING_TEXT = `Не удалось сгенерировать данные, приложение завершит свою работу.`;
+const MANY_ADS_TEXT = `Не больше 1000 объявлений`;
+const SUCCESS_TEXT = `Данные сгенерированны. Новый файл создан.`;
 
 const TITLE_AD = [
   `Продам книги Стивена Кинга.`,
@@ -65,19 +71,37 @@ const generateAd = () => ({
   category: shuffle(CATEGORY_AD).slice(getRandomInt(0, CATEGORY_AD.length - 1)).join(` `)
 });
 
-const generateAds = (count) => JSON.stringify(new Array(Number.parseInt(count, 10)).fill({}).map(generateAd));
+const generateAds = (count) => {
+  console.log(count);
+  return JSON.stringify(new Array(count).fill({}).map(generateAd));
+};
 
-const createMockData = (count) => {
-  const mock = generateAds(count);
-  fs.writeFile(FILENAME, mock, (err) => {
+const writeMock = (data) => {
+  fs.writeFile(FILENAME, data, (err) => {
     if (err) {
-      console.error(`Не удалось сгенерировать данные, приложение завершит свою работу.`);
+      console.error(NOT_WORKING_TEXT);
       process.exit(EXIT_CODE.ERROR);
 
     }
-    console.info(`Данные сгенерированны. Новый файл создан.`);
+    console.info(SUCCESS_TEXT);
     process.exit(EXIT_CODE.SUCCESS);
   });
+};
+
+const createMockData = (param) => {
+  const count = Number.parseInt(param, 10);
+  if (Number.isNaN(count)) {
+    const mock = generateAds(DEFAULT_MOCK_COUNT);
+    writeMock(mock);
+    return;
+  }
+
+  if (count > MAX_MOCK_COUNT) {
+    console.error(MANY_ADS_TEXT);
+    process.exit(EXIT_CODE.ERROR);
+  }
+  const mock = generateAds(count);
+  writeMock(mock);
 };
 
 module.exports = {
