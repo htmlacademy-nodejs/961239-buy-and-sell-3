@@ -1,7 +1,7 @@
 'use strict';
 
 const fs = require(`fs`);
-const {EXIT_CODE} = require(`./../../constants`);
+const {EXIT_CODE} = require(`./../constants`);
 const {getRandomInt, shuffle} = require(`./../utils/utils`);
 
 const FILENAME = `./../../mock.json`;
