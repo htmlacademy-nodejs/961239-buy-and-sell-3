@@ -68,11 +68,10 @@ const generateAd = () => ({
   description: shuffle(DESCRIPTION_AD).slice(0, getRandomInt(1, DESCRIPTION_AD_MAX_COUNT)).join(` `),
   sum: getRandomInt(PRICE_AD.MIN, PRICE_AD.MAX),
   picture: PICTURE_AD[getRandomInt(0, PICTURE_AD_COUNT - 1)],
-  category: shuffle(CATEGORY_AD).slice(getRandomInt(0, CATEGORY_AD.length - 1)).join(` `)
+  category: shuffle(CATEGORY_AD).slice(getRandomInt(0, CATEGORY_AD.length - 1))
 });
 
 const generateAds = (count) => {
-  console.log(count);
   return JSON.stringify(new Array(count).fill({}).map(generateAd));
 };
 
