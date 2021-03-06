@@ -47,7 +47,6 @@ const generateAds = async (count) => {
   const TITLE_AD = await readAdMockData(TITLES_PATH);
   const CATEGORY_AD = await readAdMockData(CATEGORIES_PATH);
   const DESCRIPTION_AD = await readAdMockData(DESCRIPTIONS_PATH);
-  console.log(TITLE_AD, CATEGORY_AD, DESCRIPTION_AD);
   return JSON.stringify(new Array(count).fill({}).map(() => generateAd(TITLE_AD, CATEGORY_AD, DESCRIPTION_AD)));
 };
 
