@@ -6,9 +6,9 @@ const {EXIT_CODE} = require(`./../constants`);
 const {getRandomInt, shuffle} = require(`./../utils/utils`);
 
 const FILENAME = `./../../mock.json`;
-const TITLES_PATH = `./../../data/titles.txt`;
-const CATEGORIES_PATH = `./../../data/categories.txt`;
-const DESCRIPTIONS_PATH = `./../../data/sentences.txt`;
+const TITLES_PATH = `./../data/titles.txt`;
+const CATEGORIES_PATH = `./../data/categories.txt`;
+const DESCRIPTIONS_PATH = `./../data/sentences.txt`;
 
 const DEFAULT_MOCK_COUNT = 1;
 const MAX_MOCK_COUNT = 1000;
@@ -29,10 +29,9 @@ const PICTURE_AD = new Array(PICTURE_AD_COUNT).fill(``).
   map((em, i) => `item${i + 1 < 10 ? `0${i + 1}` : i + 1}.jpg`);
 
 
-const readAdMockData = async (path, count) => {
-  const adMockData = await fs.readFileSync(path);
-  const adMockDataArray = adMockData.split(`/n`);
-  return adMockDataArray.slice(0, count ? count : adMockDataArray.length - 1);
+const readAdMockData = async (path) => {
+  const adMockData = await fs.readFile(path, `utf-8`);
+  return adMockData.split(`\n`);
 };
 
 const generateAd = (TITLE_AD, CATEGORY_AD, DESCRIPTION_AD) => ({
@@ -48,7 +47,8 @@ const generateAds = async (count) => {
   const TITLE_AD = await readAdMockData(TITLES_PATH);
   const CATEGORY_AD = await readAdMockData(CATEGORIES_PATH);
   const DESCRIPTION_AD = await readAdMockData(DESCRIPTIONS_PATH);
-  return JSON.stringify(new Array(count).fill({}).map(generateAd(TITLE_AD, CATEGORY_AD, DESCRIPTION_AD)));
+  console.log(TITLE_AD, CATEGORY_AD, DESCRIPTION_AD);
+  return JSON.stringify(new Array(count).fill({}).map(() => generateAd(TITLE_AD, CATEGORY_AD, DESCRIPTION_AD)));
 };
 
 const writeMock = async (data) => {
@@ -57,7 +57,7 @@ const writeMock = async (data) => {
     console.info(chalk.green(SUCCESS_TEXT));
     process.exit(EXIT_CODE.SUCCESS);
   } catch (err) {
-    console.error(chalk.red(NOT_WORKING_TEXT));
+    console.error(chalk.red(NOT_WORKING_TEXT, err));
     process.exit(EXIT_CODE.ERROR);
   }
 };
@@ -74,7 +74,7 @@ const createMockData = async (param) => {
     console.error(chalk.red(MANY_ADS_TEXT));
     process.exit(EXIT_CODE.ERROR);
   }
-  const mock = generateAds(count);
+  const mock = await generateAds(count);
   writeMock(mock);
 };
 
