@@ -6,6 +6,10 @@ const {EXIT_CODE} = require(`./../constants`);
 const {getRandomInt, shuffle} = require(`./../utils/utils`);
 
 const FILENAME = `./../../mock.json`;
+const TITLES_PATH = `./../data/titles.txt`;
+const CATEGORIES_PATH = `./../data/categories.txt`;
+const DESCRIPTIONS_PATH = `./../data/sentences.txt`;
+
 const DEFAULT_MOCK_COUNT = 1;
 const MAX_MOCK_COUNT = 1000;
 
@@ -13,35 +17,6 @@ const NOT_WORKING_TEXT = `Не удалось сгенерировать дан�
 const MANY_ADS_TEXT = `Не больше 1000 объявлений`;
 const SUCCESS_TEXT = `Данные сгенерированны. Новый файл создан.`;
 
-const TITLE_AD = [
-  `Продам книги Стивена Кинга.`,
-  `Продам новую приставку Sony Playstation 5.`,
-  `Продам отличную подборку фильмов на VHS.`,
-  `Куплю антиквариат.`,
-  `Куплю породистого кота.`,
-  `Продам коллекцию журналов «Огонёк».`,
-  `Отдам в хорошие руки подшивку «Мурзилка».`,
-  `Продам советскую посуду. Почти не разбита.`,
-  `Куплю детские санки.`
-];
-
-const DESCRIPTION_AD = [
-  `Товар в отличном состоянии.`,
-  `Пользовались бережно и только по большим праздникам.`,
-  `Продаю с болью в сердце...`,
-  `Бонусом отдам все аксессуары.`,
-  `Даю недельную гарантию.`,
-  `Если товар не понравится — верну всё до последней копейки.`,
-  `Это настоящая находка для коллекционера!`,
-  `Если найдёте дешевле — сброшу цену.`,
-  `Таких предложений больше нет!`,
-  `Две страницы заляпаны свежим кофе.`,
-  `При покупке с меня бесплатная доставка в черте города.`,
-  `Кажется, что это хрупкая вещь.`,
-  `Мой дед не мог её сломать.`,
-  `Кому нужен этот новый телефон, если тут такое...`,
-  `Не пытайтесь торговаться. Цену вещам я знаю.`
-];
 const DESCRIPTION_AD_MAX_COUNT = 5;
 
 const PRICE_AD = {
@@ -49,21 +24,17 @@ const PRICE_AD = {
   MAX: 100000
 };
 
-const CATEGORY_AD = [
-  `Книги`,
-  `Разное`,
-  `Посуда`,
-  `Игры`,
-  `Животные`,
-  `Журналы`
-];
-
 const PICTURE_AD_COUNT = 16;
 const PICTURE_AD = new Array(PICTURE_AD_COUNT).fill(``).
   map((em, i) => `item${i + 1 < 10 ? `0${i + 1}` : i + 1}.jpg`);
 
 
-const generateAd = () => ({
+const readAdMockData = async (path) => {
+  const adMockData = await fs.readFile(path, `utf-8`);
+  return adMockData.split(`\n`);
+};
+
+const generateAd = (TITLE_AD, CATEGORY_AD, DESCRIPTION_AD) => ({
   type: CATEGORY_AD[getRandomInt(0, CATEGORY_AD.length - 1)],
   title: TITLE_AD[getRandomInt(0, TITLE_AD.length - 1)],
   description: shuffle(DESCRIPTION_AD).slice(0, getRandomInt(1, DESCRIPTION_AD_MAX_COUNT)).join(` `),
@@ -72,8 +43,11 @@ const generateAd = () => ({
   category: shuffle(CATEGORY_AD).slice(getRandomInt(0, CATEGORY_AD.length - 1))
 });
 
-const generateAds = (count) => {
-  return JSON.stringify(new Array(count).fill({}).map(generateAd));
+const generateAds = async (count) => {
+  const TITLE_AD = await readAdMockData(TITLES_PATH);
+  const CATEGORY_AD = await readAdMockData(CATEGORIES_PATH);
+  const DESCRIPTION_AD = await readAdMockData(DESCRIPTIONS_PATH);
+  return JSON.stringify(new Array(count).fill({}).map(() => generateAd(TITLE_AD, CATEGORY_AD, DESCRIPTION_AD)));
 };
 
 const writeMock = async (data) => {
@@ -82,15 +56,15 @@ const writeMock = async (data) => {
     console.info(chalk.green(SUCCESS_TEXT));
     process.exit(EXIT_CODE.SUCCESS);
   } catch (err) {
-    console.error(chalk.red(NOT_WORKING_TEXT));
+    console.error(chalk.red(NOT_WORKING_TEXT, err));
     process.exit(EXIT_CODE.ERROR);
   }
 };
 
-const createMockData = (param) => {
+const createMockData = async (param) => {
   const count = Number.parseInt(param, 10);
   if (Number.isNaN(count)) {
-    const mock = generateAds(DEFAULT_MOCK_COUNT);
+    const mock = await generateAds(DEFAULT_MOCK_COUNT);
     writeMock(mock);
     return;
   }
@@ -99,7 +73,7 @@ const createMockData = (param) => {
     console.error(chalk.red(MANY_ADS_TEXT));
     process.exit(EXIT_CODE.ERROR);
   }
-  const mock = generateAds(count);
+  const mock = await generateAds(count);
   writeMock(mock);
 };
 
