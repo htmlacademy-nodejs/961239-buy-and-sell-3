@@ -14,6 +14,7 @@ const PORT = 8080;
 const app = express();
 
 app.use(express.static(PUBLIC_PATH));
+app.use(URL.OFFERS, express.static(PUBLIC_PATH));
 app.set(`views`, TEMPLATE_PATH);
 app.set(`view engine`, `pug`);
 app.use(URL.OFFERS, offersRouter);
