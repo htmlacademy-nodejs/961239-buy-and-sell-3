@@ -2,13 +2,12 @@
 
 const fs = require(`fs`).promises;
 const express = require(`express`);
+const {URL} = require(`./../constants`);
+
 const MOCK_DATA_PATH = `./../../mock.json`;
 const PORT = 3000;
 
 const NOT_FOUND_MESSAGE = `Not found`;
-const URL = {
-  MAIN: `/`
-};
 
 const StatusCode = {
   NOTFOUND: `404`
@@ -17,7 +16,7 @@ const StatusCode = {
 const app = express();
 app.use(express.json());
 
-app.get(`/offers`, async (request, response) => {
+app.get(URL.OFFERS, async (request, response) => {
   const mockData = await fs.readFile(MOCK_DATA_PATH, `utf-8`);
   const mockDataArray = JSON.parse(mockData);
   response.json(mockDataArray);
