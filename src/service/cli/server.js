@@ -6,7 +6,7 @@ const {nanoid} = require(`nanoid`);
 const path = require(`path`);
 const {URL} = require(`./../constants`);
 
-const MOCK_DATA_PATH = path.join(__dirname, `./../../../mock.json`);
+const MOCK_DATA_PATH = path.resolve(__dirname, `./../../../mock.json`);
 const PORT = 3000;
 
 const NOT_FOUND_MESSAGE = `Not found`;
@@ -77,12 +77,14 @@ const editOffer = (data, offerId) => {
   if (!checkOffersData(data)) {
     return {status: false, message: BAD_REQUEST_MESSAGE, code: StatusCode.BADREQUEST};
   }
-  readingData[offerIndex].type = data.type;
-  readingData[offerIndex].title = data.title;
-  readingData[offerIndex].description = data.description;
-  readingData[offerIndex].sum = data.sum;
-  readingData[offerIndex].picture = data.picture;
-  readingData[offerIndex].category = data.category;
+  readingData[offerIndex] = {...readingData[offerIndex],
+    type: data.type,
+    title: data.title,
+    description: data.description,
+    sum: data.sum,
+    picture: data.picture,
+    category: data.category
+  };
   return {status: true};
 };
 
@@ -168,7 +170,7 @@ app.delete(URL.API.OFFERID, (request, response) =>
 
 app.get(URL.API.COMMENTS, (request, response) => {
   const comments = getOfferComments(request.params.offerId);
-  return response.status(StatusCode.OK).send(comments ? comments : {});
+  return response.status(StatusCode.OK).send(comments || {});
 }
 );
 
