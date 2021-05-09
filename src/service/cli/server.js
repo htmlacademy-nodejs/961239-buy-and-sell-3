@@ -152,7 +152,6 @@ app.post(URL.API.OFFERS, (request, response) => {
     addOffer(request.body);
     return response.status(StatusCode.CREATED).send(OFFER_CREATE_MESSAGE);
   }
-  console.log(request.body);
   return response.status(StatusCode.BADREQUEST).send(BAD_REQUEST_MESSAGE);
 });
 
