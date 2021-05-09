@@ -139,9 +139,8 @@ app.get(URL.API.OFFERS, (request, response) => response.json(readingData));
 
 app.get(URL.API.OFFERID, (request, response) => {
   const offer = getOffer(request.params.offerId);
-  console.log(offer);
   if (offer) {
-    return response.send(offer);
+    return response.status(StatusCode.OK).send(offer);
   }
   return response.status(StatusCode.NOTFOUND).send(NOT_FOUND_OFFER_MESSAGE);
 });
