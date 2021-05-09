@@ -6,7 +6,7 @@ const {nanoid} = require(`nanoid`);
 const path = require(`path`);
 const {URL} = require(`./../constants`);
 
-const MOCK_DATA_PATH = path.join(__dirname, `./../../../mock.json`);
+const MOCK_DATA_PATH = path.resolve(__dirname, `./../../../mock.json`);
 const PORT = 3000;
 
 const NOT_FOUND_MESSAGE = `Not found`;
