@@ -168,7 +168,7 @@ app.delete(URL.API.OFFERID, (request, response) =>
 
 app.get(URL.API.COMMENTS, (request, response) => {
   const comments = getOfferComments(request.params.offerId);
-  return response.status(StatusCode.OK).send(comments ? comments : {});
+  return response.status(StatusCode.OK).send(comments || {});
 }
 );
 
