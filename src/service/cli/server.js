@@ -90,7 +90,6 @@ const editOffer = (data, offerId) => {
 
 const deleteOffer = (id) => {
   const offerIndex = readingData.findIndex((elem) => id === elem.id);
-  console.log(offerIndex);
   if (offerIndex === -1) {
     return false;
   }
