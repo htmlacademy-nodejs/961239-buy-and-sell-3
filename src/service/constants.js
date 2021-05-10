@@ -23,6 +23,14 @@ const URL = {
   },
   MYURLS: {
     COMMENTS: `/comments`
+  },
+  API: {
+    OFFERS: `/api/offers`,
+    OFFERID: `/api/offers/:offerId`,
+    CATEGORIES: `/api/categories`,
+    COMMENTS: `/api/offers/:offerId/comments`,
+    COMMENTID: `/api/offers/:offerId/comments/:commentId`,
+    SEARCH: `/api/search`
   }
 };
 
