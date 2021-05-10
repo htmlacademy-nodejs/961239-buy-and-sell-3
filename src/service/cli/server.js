@@ -9,18 +9,19 @@ const {URL} = require(`./../constants`);
 const MOCK_DATA_PATH = path.resolve(__dirname, `./../../../mock.json`);
 const PORT = 3000;
 
-const NOT_FOUND_MESSAGE = `Not found`;
-const NOT_FOUND_OFFER_MESSAGE = `Offer not found`;
-const NO_RESULT_MESSAGE = `No result`;
-const NOT_FOUND_COMMENT = `Comment not found`;
-const BAD_REQUEST_MESSAGE = `Invalid request params`;
-
-const COMMENT_DELETED_MESSAGE = `Comment deleted`;
-const COMMENT_ADD_MESSAGE = `Comment added`;
-const OFFER_CREATE_MESSAGE = `Offer created`;
-const OFFER_EDIT_MESSAGE = `Offer edited`;
-const OFFER_DELETE_MESSAGE = `Offer deleted`;
-const SERVER_ERROR_MESSAGE = `Something went wrong`;
+const Messages = {
+  NOT_FOUND: `Not found`,
+  NOT_FOUND_OFFER: `Offer not found`,
+  NO_RESULT: `No result`,
+  NOT_FOUND_COMMENT: `Comment not found`,
+  BAD_REQUEST: `Invalid request params`,
+  COMMENT_DELETE: `Comment deleted`,
+  COMMENT_ADD: `Comment added`,
+  OFFER_CREATE: `Offer created`,
+  OFFER_EDIT: `Offer edited`,
+  OFFER_DELETE: `Offer deleted`,
+  SERVER_ERROR: `Something went wrong`
+};
 
 const StatusCode = {
   OK: `200`,
@@ -48,34 +49,47 @@ const findAllCategories = () => {
       }
     });
   });
-  return categories;
+  return {status: StatusCode.OK, content: categories};
 };
 
 
 const checkOffersData = (data) => (data.category) && (data.title) && (data.sum) && (data.type);
 
-const getOffer = (id) => readingData.find((elem) => id === elem.id);
+const getAllOffers = () => ({status: StatusCode.OK, content: readingData});
 
-const addOffer = (offerData) => {
-  readingData.push({
-    id: nanoid(6),
-    type: offerData.type,
-    title: offerData.title,
-    description: offerData.description ? offerData.description : null,
-    sum: offerData.sum,
-    picture: offerData.picture ? offerData.picture : null,
-    category: offerData.category,
-    comments: []
-  });
+const getOffer = (id) => {
+  const offer = readingData.find((elem) => id === elem.id);
+  if (offer) {
+    return {status: StatusCode.OK, content: offer};
+  }
+  return {status: StatusCode.NOTFOUND, content: Messages.NOT_FOUND_OFFER};
 };
 
-const editOffer = (data, offerId) => {
+const addOffer = (offerData) => {
+  if (checkOffersData(offerData)) {
+    readingData.push({
+      id: nanoid(6),
+      type: offerData.type,
+      title: offerData.title,
+      description: offerData.description ? offerData.description : null,
+      sum: offerData.sum,
+      picture: offerData.picture ? offerData.picture : null,
+      category: offerData.category,
+      comments: []
+    });
+    return {status: StatusCode.CREATED, content: Messages.OFFER_CREATE};
+  }
+  return {status: StatusCode.BADREQUEST, content: Messages.BAD_REQUEST};
+};
+
+const editOffer = (requestData) => {
+  const {data, offerId} = requestData;
   const offerIndex = readingData.findIndex((elem) => offerId === elem.id);
   if (offerIndex === -1) {
-    return {status: false, message: NOT_FOUND_OFFER_MESSAGE, code: StatusCode.NOTFOUND};
+    return {status: StatusCode.NOTFOUND, content: Messages.NOT_FOUND_OFFER};
   }
   if (!checkOffersData(data)) {
-    return {status: false, message: BAD_REQUEST_MESSAGE, code: StatusCode.BADREQUEST};
+    return {status: StatusCode.BADREQUEST, content: Messages.BAD_REQUEST};
   }
   readingData[offerIndex] = {...readingData[offerIndex],
     type: data.type,
@@ -85,117 +99,96 @@ const editOffer = (data, offerId) => {
     picture: data.picture,
     category: data.category
   };
-  return {status: true};
+  return {status: StatusCode.OK, content: Messages.OFFER_EDIT};
 };
 
 const deleteOffer = (id) => {
   const offerIndex = readingData.findIndex((elem) => id === elem.id);
   if (offerIndex === -1) {
-    return false;
+    return {status: StatusCode.NOTFOUND, content: Messages.NOT_FOUND_OFFER};
   }
   readingData.splice(offerIndex, 1);
-  return true;
+  return {status: StatusCode.OK, content: Messages.OFFER_DELETE};
 };
 
-const getOfferComments = (id) => readingData.find((elem) => id === elem.id).comments;
+const getOfferComments = (id) => ({status: StatusCode.OK, content: readingData.find((elem) => id === elem.id).comments});
 
-const addComment = (offerId, message) => {
+const addComment = (requestData) => {
+  const {offerId, message} = requestData;
   const offerIndex = readingData.findIndex((elem) => offerId === elem.id);
   if (offerIndex === -1) {
-    return {status: false, message: NOT_FOUND_OFFER_MESSAGE, code: StatusCode.NOTFOUND};
+    return {status: StatusCode.NOTFOUND, content: Messages.NOT_FOUND_OFFER};
   }
   if (message.text) {
     readingData[offerIndex].comments.push({
       text: message.text,
       id: nanoid(6)
     });
-    return {status: true};
+    return {status: StatusCode.CREATED, content: Messages.COMMENT_ADD};
   }
-  return {status: false, message: BAD_REQUEST_MESSAGE, code: StatusCode.BADREQUEST};
+  return {status: StatusCode.BADREQUEST, content: Messages.BAD_REQUEST};
 };
 
-const deleteComment = (offerId, commentId) => {
+const deleteComment = (requestData) => {
+  const {offerId, commentId} = requestData;
   const offerIndex = readingData.findIndex((elem) => offerId === elem.id);
   if (offerIndex === -1) {
-    return {status: false, message: NOT_FOUND_OFFER_MESSAGE};
+    return {status: StatusCode.NOTFOUND, content: Messages.NOT_FOUND_OFFER};
   }
   const commentIndex = readingData[offerIndex].comments.findIndex((elem) => commentId === elem.id);
   if (commentIndex === -1) {
-    return {status: false, message: NOT_FOUND_COMMENT};
+    return {status: StatusCode.NOTFOUND, content: Messages.NOT_FOUND_COMMENT};
   }
   readingData[offerIndex].comments.splice(commentIndex, 1);
-  return {status: true};
+  return {status: StatusCode.OK, content: Messages.COMMENT_DELETE};
 };
 
 const searchOffers = (query) => {
-  return readingData.filter((elem) => elem.title.indexOf(query) !== -1);
+  const foundOffers = readingData.filter((elem) => elem.title.indexOf(query) !== -1);
+  return foundOffers.length ? {status: StatusCode.OK, content: foundOffers} :
+    {status: StatusCode.NOTFOUND, content: Messages.NO_RESULT};
+};
+
+const requestHandler = (response, cb, requestData = null) => {
+  const result = cb(requestData);
+  return response.status(result.status).send(result.content);
 };
 
 const readingData = [];
 readData();
 
-app.get(URL.API.OFFERS, (request, response) => response.json(readingData));
+app.get(URL.API.OFFERS, (request, response) => requestHandler(response, getAllOffers));
 
-app.get(URL.API.OFFERID, (request, response) => {
-  const offer = getOffer(request.params.offerId);
-  if (offer) {
-    return response.status(StatusCode.OK).send(offer);
-  }
-  return response.status(StatusCode.NOTFOUND).send(NOT_FOUND_OFFER_MESSAGE);
-});
+app.get(URL.API.OFFERID, (request, response) => requestHandler(response, getOffer, request.params.offerId));
 
-app.get(URL.API.CATEGORIES, (request, response) => response.json(findAllCategories()));
+app.get(URL.API.CATEGORIES, (request, response) => requestHandler(response, findAllCategories));
 
-app.post(URL.API.OFFERS, (request, response) => {
-  if (checkOffersData(request.body)) {
-    addOffer(request.body);
-    return response.status(StatusCode.CREATED).send(OFFER_CREATE_MESSAGE);
-  }
-  return response.status(StatusCode.BADREQUEST).send(BAD_REQUEST_MESSAGE);
-});
+app.post(URL.API.OFFERS, (request, response) => requestHandler(response, addOffer, request.body));
 
-app.put(URL.API.OFFERID, (request, response) => {
-  const result = editOffer(request.body, request.params.offerId);
-  return result.status ? response.status(StatusCode.OK).send(OFFER_EDIT_MESSAGE) :
-    response.status(result.code).send(result.message);
-});
+app.put(URL.API.OFFERID, (request, response) =>
+  requestHandler(response, editOffer, {data: request.body, offerId: request.params.offerId}));
 
-app.delete(URL.API.OFFERID, (request, response) =>
-  deleteOffer(request.params.offerId) ? response.status(StatusCode.OK).send(OFFER_DELETE_MESSAGE) :
-    response.status(StatusCode.BADREQUEST)
-);
+app.delete(URL.API.OFFERID, (request, response) =>requestHandler(response, deleteOffer, request.params.offerId));
 
-app.get(URL.API.COMMENTS, (request, response) => {
-  const comments = getOfferComments(request.params.offerId);
-  return response.status(StatusCode.OK).send(comments || {});
-}
-);
+app.get(URL.API.COMMENTS, (request, response) => requestHandler(response, getOfferComments, request.params.id));
 
-app.delete(URL.API.COMMENTID, (request, response) => {
-  const result = deleteComment(request.params.offerId, request.params.commentId);
-  return result.status ? response.status(StatusCode.OK).send(COMMENT_DELETED_MESSAGE) : response.status(StatusCode.NOTFOUND).send(result.message);
-});
+app.post(URL.API.COMMENTS, (request, response) =>
+  requestHandler(response, addComment, {offerId: request.params.offerId, message: request.body}));
 
-app.post(URL.API.COMMENTS, (request, response) => {
-  const result = addComment(request.params.offerId, request.body);
-  return result.status ? response.status(StatusCode.CREATED).send(COMMENT_ADD_MESSAGE) : response.status(result.code).send(result.message);
-});
+app.delete(URL.API.COMMENTID, (request, response) =>
+  requestHandler(response, deleteComment, {offerId: request.params.offerId, commentId: request.params.commentId}));
 
-app.get(URL.API.SEARCH, (request, response) => {
-  const foundOffers = searchOffers(request.query.query);
-  return foundOffers.length ? response.status(StatusCode.OK).send(foundOffers) :
-    response.status(StatusCode.NOTFOUND).send(NO_RESULT_MESSAGE);
-});
+app.get(URL.API.SEARCH, (request, response) => requestHandler(response, searchOffers, request.query.query));
 
 app.use((request, response) => response
-.status(StatusCode.NOTFOUND).send(NOT_FOUND_MESSAGE)
+.status(StatusCode.NOTFOUND).send(Messages.NOT_FOUND)
 );
 
 // next добавляем для того, чтобы не вызывать дефолтный обработчик 500й
 // eslint-disable-next-line
 app.use((error, request, response, next) => {
   console.error(error.stack);
-  return response.status(StatusCode.SERVERERROR).send(SERVER_ERROR_MESSAGE);
+  return response.status(StatusCode.SERVERERROR).send(Messages.SERVER_ERROR);
 });
 
 
