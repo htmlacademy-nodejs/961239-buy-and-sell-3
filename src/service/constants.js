@@ -68,3 +68,8 @@ module.exports = {
   StatusCode
 };
 
+module.exports.Env = {
+  DEVELOPMENT: `development`,
+  PRODUCTION: `production`
+};
+
