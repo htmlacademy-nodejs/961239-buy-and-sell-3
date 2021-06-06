@@ -13,17 +13,12 @@ const search = require(`./search`);
 
 const app = new Router();
 
-const requestHandler = (response, cb, requestData = null) => {
-  const result = cb(requestData);
-  return response.status(result.status).send(result.content);
-};
-
 (async () => {
   const readingData = await readData();
 
-  category(app, new CategoryService(readingData), requestHandler);
-  offers(app, new OffersService(readingData), new CommentsService(readingData), requestHandler);
-  search(app, new SearchService(readingData), requestHandler);
+  category(app, new CategoryService(readingData));
+  offers(app, new OffersService(readingData), new CommentsService(readingData));
+  search(app, new SearchService(readingData));
 })();
 
 module.exports = app;

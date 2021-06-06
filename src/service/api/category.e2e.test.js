@@ -3,8 +3,8 @@
 const express = require(`express`);
 const request = require(`supertest`);
 
-const search = require(`./search`);
-const SearchService = require(`../data-service/search`);
+const category = require(`./category`);
+const CategoryService = require(`../data-service/category`);
 const {StatusCode} = require(`./../constants`);
 
 const mockData = [
@@ -172,53 +172,23 @@ const mockData = [
 
 const app = express();
 app.use(express.json());
-search(app, new SearchService(mockData));
+category(app, new CategoryService(mockData));
 
 
-describe(`API returns offer based on search query`, () => {
+describe(`API returns all categories`, () => {
 
   let response;
 
   beforeAll(async () => {
     response = await request(app)
-          .get(`/search`)
-          .query({
-            query: `Куплю антиквариат`
-          });
+          .get(`/categories`);
   });
 
   test(`Status code 200`, () => expect(response.statusCode).toBe(parseInt(StatusCode.OK, 10)));
-  test(`1 offer found`, () => expect(response.body).toHaveLength(1));
-  test(`Offer has correct id`, () => expect(response.body[0].id).toBe(`KtjgmO`));
-});
-
-describe(`API returns offers based on search query`, () => {
-
-  let response;
-
-  beforeAll(async () => {
-    response = await request(app)
-          .get(`/search`)
-          .query({
-            query: `Куплю`
-          });
-  });
-
-  test(`Status code 200`, () => expect(response.statusCode).toBe(parseInt(StatusCode.OK, 10)));
-  test(`3 offers found`, () => expect(response.body).toHaveLength(3));
-});
-
-describe(`API returns no result based on search query which not match`, () => {
-
-  let response;
-
-  beforeAll(async () => {
-    response = await request(app)
-          .get(`/search`)
-          .query({
-            query: `Продам антиквариат`
-          });
-  });
-
-  test(`Status code 200`, () => expect(response.statusCode).toBe(parseInt(StatusCode.NOTFOUND, 10)));
+  test(`All categories found`, () => expect(response.body).toEqual([`Игры`,
+    `Разное`,
+    `Журналы`,
+    `Книги`,
+    `Посуда`,
+    `Животные`]));
 });

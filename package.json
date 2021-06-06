@@ -24,6 +24,7 @@
   "devDependencies": {
     "eslint": "7.18.0",
     "eslint-config-htmlacademy": "1.0.1",
+    "eslint-plugin-jest": "24.3.6",
     "jest": "26.6.3",
     "nodemon": "2.0.7",
     "pug-lint": "2.6.0",
